@@ -77,19 +77,6 @@
         {%- endfor -%}
 
         {% comment %} ===== CUSTOM SIZE MEASUREMENT FORM ===== {% endcomment %}
-        {%- assign has_custom_variant = false -%}
-        {%- for variant in product.variants -%}
-            {%- for opt in variant.options -%}
-                {%- if opt contains 'custom' or opt contains 'Custom' -%}
-                    {%- assign has_custom_variant = true -%}
-                {%- endif -%}
-            {%- endfor -%}
-            {%- if variant.title contains 'custom' or variant.title contains 'Custom' -%}
-                {%- assign has_custom_variant = true -%}
-            {%- endif -%}
-        {%- endfor -%}
-
-        {%- if has_custom_variant -%}
         <div id="custom-size-fields" style="display:none; margin-top: 16px;">
           <div class="csf-grid">
             <div class="csf-labels">
@@ -213,7 +200,6 @@
             }
           })();
         </script>
-        {%- endif -%}
 
         <script type="application/json" id="variants{{ sectionId }}">{{ product.variants | json }}</script>
     </variant-selects>
