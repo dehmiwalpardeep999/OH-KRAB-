@@ -1,0 +1,361 @@
+
+<div class="video-carousel-wrapper">
+  <h2 class="h3 ft2" style="text-align:center; text-transform: uppercase;  font-weight:400;">Watch & Buy</h2>
+
+  <div class="video-carousel" id="videoCarousel">
+    {% for block in section.blocks %}
+      {% assign product = all_products[block.settings.product] %}
+      <div class="video-card" data-product-handle="{{ product.handle }}" data-video-url="{{ block.settings.video_url }}">
+        <video
+          preload="metadata"
+          muted
+          playsinline
+          class="video-preview lazy-video"
+          poster="{{ product.featured_image | img_url: '400x' }}"
+        ></video>
+
+        {% if product %}
+          <div class="product-info">
+            <img src="{{ product.featured_image | img_url: '200x' }}" alt="{{ product.title }}">
+            <div class="product-text">
+              <p class="product-title">{{ product.title }}</p>
+              <p class="product-price">
+                {{ product.price | money }}
+                {% if product.compare_at_price > product.price %}
+                  <span class="compare-price">{{ product.compare_at_price | money }}</span>
+                {% endif %}
+              </p>
+              {% if product.compare_at_price and product.compare_at_price > product.price %}
+                {% assign discount = product.compare_at_price | minus: product.price %}
+                {% assign discount_percentage = discount | times: 100 | divided_by: product.compare_at_price | round %}
+                <span class="discount-tag">{{ discount_percentage }}% off</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Popup -->
+  <div class="video-popup-overlay" id="videoPopup">
+    <div class="video-popup">
+      <button class="popup-close">&times;</button>
+      <div class="popup-video-container">
+        <div id="popupLoader" class="popup-loader"></div>
+        <video id="popupVideo" autoplay loop muted playsinline></video>
+        <button class="popup-mute" id="popupMuteBtn">🔇</button>
+      </div>
+      <div class="popup-product-info">
+        <img id="popupProductImage" src="" alt="">
+        <div class="popup-text">
+          <h3 id="popupProductTitle"></h3>
+          <p class="popup-price" id="popupProductPrice"></p>
+          <a id="popupViewProduct" class="view-product-btn" href="">VIEW PRODUCT</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.video-carousel-wrapper {
+  position: relative;
+  padding: 20px;
+  overflow: hidden;
+}
+.video-carousel {
+  display: flex;
+ justify-content: space-evenly;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #000 #fff;
+}
+.video-carousel::-webkit-scrollbar { height: 4px; }
+.video-carousel::-webkit-scrollbar-track { background: #fff; }
+.video-carousel::-webkit-scrollbar-thumb { background: #000; border-radius: 2px; }
+
+.video-card {
+  margin-bottom: 10px;
+  flex: 0 0 240px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: relative;
+  cursor: pointer;
+}
+.video-preview {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 12px 12px 0 0;
+  background: #000;
+}
+
+/* Product info */
+.product-info {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  gap: 10px;
+}
+.product-info img {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.product-title {
+  line-height: 1rem;
+  font-weight: 600;
+  margin: 0;
+  font-size: 12px;
+}
+.product-price { font-size: 11px; margin: 0; }
+.compare-price { text-decoration: line-through; color: #888; margin-left: 6px; }
+.discount-tag {
+  display: inline-block;
+  margin-top: 4px;
+  background: #000;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+/* Popup */
+.video-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+.video-popup {
+  background: #000;
+  border-radius: 10px;
+  max-width: 420px;
+  width: 90%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.popup-video-container { position: relative; width: 100%; max-height: 80vh; overflow: hidden; }
+.popup-video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.popup-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  color: #fff;
+  font-size: 28px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+.popup-mute {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 20px;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+.popup-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 4px solid rgba(255,255,255,0.3);
+  border-top: 4px solid #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  z-index: 5;
+}
+@keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+.popup-product-info {
+  background: #fff;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  gap: 10px;
+}
+.popup-product-info img {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.view-product-btn {
+  font-size: 14px;
+  display: block;
+  width: 100%;
+  background: #000;
+  color: #fff;
+  text-align: center;
+  padding: 4px 10;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+h3#popupProductTitle {
+    margin: 0;
+    font-size: 16px !important;
+}
+
+p#popupProductPrice {
+    margin: 0;
+    font-size: 12px;
+}
+
+
+
+@media (max-width: 768px) {
+  .video-card { flex: 0 0 55%; }
+  .video-preview { height: 320px; }
+  
+  .video-carousel {
+    justify-content: flex-start;
+  }
+}
+  
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const popup = document.getElementById('videoPopup');
+  const popupVideo = document.getElementById('popupVideo');
+  const popupLoader = document.getElementById('popupLoader');
+  const popupImage = document.getElementById('popupProductImage');
+  const popupTitle = document.getElementById('popupProductTitle');
+  const popupPrice = document.getElementById('popupProductPrice');
+  const popupView = document.getElementById('popupViewProduct');
+  const muteBtn = document.getElementById('popupMuteBtn');
+  const closeBtn = document.querySelector('.popup-close');
+
+  // Lazy load + infinite 1.5s preview loop
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const video = entry.target;
+        const src = video.closest('.video-card').dataset.videoUrl;
+
+        if (!video.src) {
+          // Load full video but restrict playback to 1.5s and loop smoothly
+          video.src = src;
+          video.muted = true;
+          video.playsInline = true;
+          video.autoplay = true;
+          video.loop = false;
+          video.currentTime = 0;
+          video.play().catch(()=>{});
+
+          // Loop only the first 1.5 seconds infinitely
+          video.addEventListener('timeupdate', () => {
+            if (video.currentTime >= 1.5) {
+              video.currentTime = 0;
+              video.play();
+            }
+          });
+        }
+        observer.unobserve(video);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('.video-preview').forEach(v => observer.observe(v));
+
+  // --- Popup video logic (unchanged) ---
+  document.querySelectorAll('.video-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const videoUrl = card.dataset.videoUrl;
+      const img = card.querySelector('.product-info img').src;
+      const title = card.querySelector('.product-title').textContent;
+      const price = card.querySelector('.product-price').innerHTML;
+      const handle = card.dataset.productHandle;
+
+      popup.style.display = 'flex';
+      popupLoader.style.display = 'block';
+      popupVideo.style.display = 'none';
+
+      popupVideo.src = videoUrl;
+      popupVideo.loop = true;
+      popupVideo.muted = true;
+      popupVideo.autoplay = true;
+
+      popupVideo.oncanplay = () => {
+        popupLoader.style.display = 'none';
+        popupVideo.style.display = 'block';
+        popupVideo.play();
+      };
+
+      popupImage.src = img;
+      popupTitle.textContent = title;
+      popupPrice.innerHTML = price;
+      popupView.href = `/products/${handle}`;
+    });
+  });
+
+  // Close popup
+  closeBtn.addEventListener('click', () => {
+    popupVideo.pause();
+    popupVideo.src = '';
+    popup.style.display = 'none';
+  });
+
+  // Mute toggle
+  muteBtn.addEventListener('click', () => {
+    popupVideo.muted = !popupVideo.muted;
+    muteBtn.textContent = popupVideo.muted ? '🔇' : '🔊';
+  });
+});
+</script>
+
+
+{% schema %}
+{
+  "name": "Video Carousel",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "video_block",
+      "name": "Video Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "video_url",
+          "label": "Video URL"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Tagged Product"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video Carousel with Popup"
+    }
+  ]
+}
+{% endschema %}

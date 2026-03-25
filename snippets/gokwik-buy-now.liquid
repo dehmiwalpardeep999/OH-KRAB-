@@ -1,0 +1,41 @@
+{% if settings.goBuynowEnable %}             
+    <button type="button" class="disabled shopify-payment-button__button shopify-payment-button__button--unbranded" disabled onclick="onBuyNowClick(this)" id="gokwik-buy-now"{% if settings.hideFlow %} style="display:none !important;" {% endif %}>{{ settings.buynow-titile }}
+    <div style="display:none" class="addloadr" id="abtn-loader"><div class="cir-loader">Loading..</div></div>
+    </button>  
+    {% endif %}
+    
+    {% comment %} Custom Form Logic - Added for buy button page {% endcomment %}
+    {%- if settings.show_custom_formor settings.show_custom_form -%}
+    <div class="custom-form-wrapper mt15">
+      {%- form 'product', product, id: product_form_id, class: 'custom-product-form' -%}
+          <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+              
+                  {%- if block.settings.custom_form_title != blank or settings.custom_form_title != blank -%}
+                        <h4 class="custom-form-title">{{ block.settings.custom_form_title | default: settings.custom_form_title }}</h4>
+                            {%- endif -%}
+                                
+                                    {%- if block.settings.custom_form_description != blank or settings.custom_form_description != blank -%}
+                                          <p class="custom-form-desc">{{ block.settings.custom_form_description | default: settings.custom_form_description }}</p>
+                                              {%- endif -%}
+                                                  
+                                                      {%- assign form_fields = block.settings.form_fields | default: settings.form_fields -%}
+                                                          {%- if form_fields != blank -%}
+                                                                {%- assign fields = form_fields | split: ',' -%}
+                                                                      {%- for field in fields -%}
+                                                                              {%- assign field_clean = field | strip -%}
+                                                                                      <div class="custom-form-field">
+                                                                                                <input type="text" 
+                                                                                                                 name="properties[{{ field_clean }}]" 
+                                                                                                                                  placeholder="{{ field_clean }}" 
+                                                                                                                                                   class="input-full"
+                                                                                                                                                                    {% if forloop.first %}required{% endif %}>
+                                                                                                                                                                            </div>
+                                                                                                                                                                                  {%- endfor -%}
+                                                                                                                                                                                      {%- endif -%}
+                                                                                                                                                                                          
+                                                                                                                                                                                              <button type="submit" class="btn custom-form-submit">
+                                                                                                                                                                                                    {{ block.settings.submit_button_text | default: settings.submit_button_text | default: 'Submit' }}
+                                                                                                                                                                                                        </button>
+                                                                                                                                                                                                          {%- endform -%}
+                                                                                                                                                                                                          </div>
+                                                                                                                                                                                                          {%- endif -%}}

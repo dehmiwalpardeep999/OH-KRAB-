@@ -1,0 +1,273 @@
+
+
+
+<!-- ===== Floating Portrait Product Video (Left Bottom) ===== -->
+<style>
+  /* Prefixed classes to prevent conflicts */
+  .pv-left-float {
+    position: fixed;
+    right: 20px;
+    bottom: 140px;
+    width: 88px;
+    height: 156px;
+    border-radius: 18px;
+    overflow: hidden;
+    z-index: 9999;
+    cursor: pointer;
+    background: #000;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    transition: all 0.25s ease;
+  }
+  .pv-left-float:hover { transform: scale(1.03); }
+  .pv-left-float video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: inherit;
+  }
+
+  /* Popup overlay */
+  .pv-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 10000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+  }
+  .pv-popup.pv-active { display: flex; }
+
+  /* Popup inner container (portrait layout) */
+  .pv-content {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 95vh;
+    border-radius: 14px;
+    background: #000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Video wrapper */
+  .pv-video-wrapper {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+  }
+  .pv-video-wrapper video {
+    width: auto;
+    height: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  /* Controls: close & mute */
+  .pv-close, .pv-mute {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+  }
+  .pv-mute { right: 68px; font-size: 18px; }
+
+  /* Bottom product card overlay */
+  .pv-bottom-card {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(255,255,255,0.95);
+    border-radius: 14px 14px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 -6px 12px rgba(0,0,0,0.15);
+  }
+  .pv-bottom-card img {
+    width: 65px;
+    height: 85px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .pv-info {
+    flex: 1;
+    overflow: hidden;
+  }
+  .pv-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f1724;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pv-prices {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pv-price {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .pv-compare {
+    font-size: 13px;
+    text-decoration: line-through;
+    color: #7a8594;
+  }
+  .pv-add-btn {
+    background: #111827;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    .pv-left-float {
+      right: 12px;
+      bottom: 150px;
+      width: 72px;
+      height: 130px;
+    }
+    .pv-content { height: 92vh; border-radius: 10px; }
+    .pv-bottom-card img { width: 55px; height: 72px; }
+    .pv-add-btn { padding: 10px 12px; font-size: 13px; }
+  }
+
+  body.pv-noscroll { overflow: hidden; }
+</style>
+
+<!-- Floating portrait video -->
+<div class="pv-left-float" id="pvFloatTrigger">
+  <video
+    id="pvFloatVideo"
+    src="{{ product.metafields.custom.video_link | escape }}"
+    autoplay
+    loop
+    muted
+    playsinline
+    preload="auto"
+  ></video>
+</div>
+
+<!-- Popup -->
+<div class="pv-popup" id="pvPopup">
+  <div class="pv-content">
+    <button class="pv-mute" id="pvMuteBtn">🔇</button>
+    <button class="pv-close" id="pvCloseBtn">✕</button>
+
+    <div class="pv-video-wrapper">
+      <video
+        id="pvPopupVideo"
+        src="{{ product.metafields.custom.video_link | escape }}"
+        autoplay
+        loop
+        muted
+        playsinline
+        preload="auto"
+      ></video>
+    </div>
+
+    <div class="pv-bottom-card">
+      <img src="{{ product.featured_image | image_url: width: 300 }}" alt="{{ product.title }}">
+      <div class="pv-info">
+        <div class="pv-title">{{ product.title }}</div>
+        <div class="pv-prices">
+          <div class="pv-price">{{ product.price | money }}</div>
+          {% if product.compare_at_price_max > product.price %}
+            <div class="pv-compare">{{ product.compare_at_price_max | money }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <form method="post" action="/cart/add">
+        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+        <button type="submit" class="pv-add-btn">ADD TO CART</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const floatTrigger = document.getElementById('pvFloatTrigger');
+  const popup = document.getElementById('pvPopup');
+  const popupVideo = document.getElementById('pvPopupVideo');
+  const floatVideo = document.getElementById('pvFloatVideo');
+  const muteBtn = document.getElementById('pvMuteBtn');
+  const closeBtn = document.getElementById('pvCloseBtn');
+
+  if(!floatTrigger || !popup) return;
+
+  // Ensure floating video autoplay on page load
+  window.addEventListener('load', () => {
+    floatVideo.muted = true;
+    floatVideo.loop = true;
+    floatVideo.play().catch(() => {
+      // If autoplay blocked, start after first user interaction
+      document.body.addEventListener('click', () => {
+        floatVideo.play().catch(()=>{});
+      }, { once: true });
+    });
+  });
+
+  // Open popup
+  floatTrigger.addEventListener('click', () => {
+    popup.classList.add('pv-active');
+    document.body.classList.add('pv-noscroll');
+    popupVideo.currentTime = 0;
+    popupVideo.muted = true;
+    popupVideo.play().catch(()=>{});
+    floatVideo.pause();
+    muteBtn.textContent = '🔇';
+  });
+
+  // Close popup
+  const closePopup = () => {
+    popup.classList.remove('pv-active');
+    document.body.classList.remove('pv-noscroll');
+    popupVideo.pause();
+    floatVideo.play().catch(()=>{});
+  };
+
+  closeBtn.addEventListener('click', closePopup);
+  popup.addEventListener('click', (e) => { if(e.target === popup) closePopup(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closePopup(); });
+
+  // Mute/unmute popup video
+  muteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    popupVideo.muted = !popupVideo.muted;
+    muteBtn.textContent = popupVideo.muted ? '🔇' : '🔊';
+  });
+})();
+</script>
+<!-- ===== End Floating Portrait Video ===== -->

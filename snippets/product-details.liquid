@@ -1,0 +1,140 @@
+<style>
+  .product-details-section { margin-top: 10px; }
+  .product-details-section h3 { font-weight:600; }
+  .product-details-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:25px 40px; }
+  .product-detail-item h4 { margin:0 0 5px 0; font-size:13px; text-transform:uppercase; color:#284ca0; letter-spacing:0.5px; font-weight:600; }
+  .product-detail-item p { margin:0; font-size:15px; color:black; line-height:1.5; }
+  .product-detail-disclaimer { margin-top:25px; font-size:13px; color:#222; }
+  {% comment %} @media (max-width:768px){ .product-details-grid { grid-template-columns:1fr; gap:15px 0; } } {% endcomment %}
+</style>
+
+<div class="product-details-section">
+  <h3>Product Details</h3>
+  <div class="product-details-grid">
+
+    {%- comment -%} detail1 {%- endcomment -%}
+    {% assign key = "detail1" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+    {%- comment -%} detail2 {%- endcomment -%}
+    {% assign key = "detail2" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+    {%- comment -%} detail3 {%- endcomment -%}
+    {% assign key = "detail3" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+    {%- comment -%} detail4 {%- endcomment -%}
+    {% assign key = "detail4" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+    {%- comment -%} detail5 {%- endcomment -%}
+    {% assign key = "detail5" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+    {%- comment -%} detail6 {%- endcomment -%}
+    {% assign key = "detail6" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+    {%- comment -%} detail7 {%- endcomment -%}
+    {% assign key = "detail7" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+    {%- comment -%} detail8 {%- endcomment -%}
+    {% assign key = "detail8" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+    {%- comment -%} detail9 {%- endcomment -%}
+    {% assign key = "detail9" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+    {%- comment -%} detail10 {%- endcomment -%}
+    {% assign key = "detail10" %}
+    {% assign mf = product.metafields.custom[key] %}
+    {% if mf %}
+      {% assign clean = mf | replace: '["', '' | replace: '"]', '' | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign parts = clean | split: ',' %}
+      <div class="product-detail-item">
+        <h4>{{ parts[0] | strip | strip_html }}</h4>
+        <p>{{ parts[1] | strip | strip_html }}</p>
+      </div>
+    {% endif %}
+
+  </div>
+
+  <p class="product-detail-disclaimer">
+    <strong>Disclaimer:</strong> There might be a slight variation in the actual color of the product due to different screen resolutions.
+  </p>
+</div>

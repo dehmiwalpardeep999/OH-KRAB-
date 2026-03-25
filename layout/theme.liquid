@@ -1,0 +1,275 @@
+{%- liquid
+    assign isRtl = false
+    assign lisRtl = 'ar,dv,ha,he,ku,fa,ur,ug' | split: ','
+    if lisRtl contains request.locale.iso_code or settings.rtl
+        assign isRtl = true
+    endif
+-%}
+<!doctype html>
+<html class="no-js" lang="{{ request.locale.iso_code }}" {% if isRtl %}dir="rtl"{% endif %}>
+  <head>
+    {% comment %} <!-- Gokwik theme code start -->
+  <link rel="dns-prefetch" href="https://pdp.gokwik.co/">
+  <link rel="dns-prefetch" href="https://api.gokwik.co">
+    {% render 'gokwik' %}
+ <!-- Gokwik theme code End --> {% endcomment %}
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "v0pdec11nr");
+</script>
+ 
+  {%- capture metaTags -%}
+	<meta charset="utf-8">
+  	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {{ 'custom.css' | asset_url | stylesheet_tag }}
+	<meta name="theme-color" content="{{ settings.mob_browser }}">
+	<meta name="format-detection" content="telephone=no">
+	<link rel="canonical" href="{{ canonical_url }}">
+  <link href="https://fonts.cdnfonts.com/css/roots-n-branches" rel="stylesheet">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+	<link rel="dns-prefetch" href="https://{{shop.domain}}" crossorigin>
+	<link rel="dns-prefetch" href="https://{{shop.permanent_domain}}" crossorigin>
+	{%- unless settings.header_font.system? and settings.body_font.system? and settings.fonts == '2' -%}
+    {%- endunless -%}
+
+    {%- if settings.favicon != blank -%}<link rel="shortcut icon" href="{{ settings.favicon | img_url: '32x32' }}" type="image/png">{%- endif -%}
+    {%- if settings.favicon_retina != blank -%}<link rel="apple-touch-icon-precomposed" type="image/png" sizes="152x152" href="{{ settings.favicon_retina | img_url: '152x' }}">{%- endif -%}
+
+  	<title>
+      {{ page_title }}
+      {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+      {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+  	{%- if page_description -%}<meta name="description" content="{{ page_description | escape }}">{%- endif -%}
+  	{%- render 'social-meta-tags' -%}
+  {%- endcapture -%}
+  {{metaTags  | strip_newlines | remove: "  " | remove: "	" }}
+
+  {%- capture mainjs -%}
+  	{%- render 'head-css', isRtl:isRtl -%}
+  	<link rel="stylesheet" href="{% if isRtl %}{{ 'themeRtl.css' | asset_url }}{% else %}{{ 'theme.css' | asset_url }}{% endif %}" type="text/css" media="all">
+    <script src="{{ 'lazysizes.js' | asset_url }}" async></script>
+  	<script src="{{ 'jquery.min.js' | asset_url }}"defer="defer"></script>
+	<script>
+		var theme = {
+			strings:{
+				showMore:{{ 'general.filters.show_more' | t | json }},showLess:{{ 'general.filters.show_less' | t | json }}
+			},
+			mlcurrency:{%- if settings.show_multiple_currencies and settings.currency_opt == 'script' -%}true{%- else -%}false{% endif %},moneyFormat:{% if settings.curCode %}{{ shop.money_with_currency_format | json }}{% else %}{{ shop.money_format | json }}{% endif %},shopCurrency:{{ shop.currency | json }},autoCurrencies:{{ settings.auto_currencies }},CurrencyFormat:{% if settings.curCode %}'money_with_currency_format'{% else %}'money_format'{% endif %},
+			ajax_cart:{{settings.ajax_cart }},fixedHeader:{{settings.show_sticky_header }},animation:{{settings.enable_site_animation }},animationMobile:{{settings.site_animation_mobile }},searchresult:{{ 'general.search.all' | t | json }},wlAvailable:{{ 'products.wishlist.available' | t | json }},rtl:{{ isRtl }},
+		};
+		document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+        var alpha = "Abcdefghijklmnopqrstuvwxyz".split(""), thm = alpha[0]+alpha[21]+alpha[14]+alpha[13]+alpha[4], shpeml = '{{shop.email}}', dmn = window.location.hostname;
+        window.lazySizesConfig = window.lazySizesConfig || {};
+		window.lazySizesConfig.loadMode = 1;
+      	window.lazySizesConfig.loadHidden = false;
+        window.shopUrl = '{{ request.origin }}';
+      window.routes = {
+        cart_add_url: '{{ routes.cart_add_url }}',
+        cart_change_url: '{{ routes.cart_change_url }}',
+        cart_update_url: '{{ routes.cart_update_url }}',
+        cart_url: '{{ routes.cart_url }}',
+        predictive_search_url: '{{ routes.predictive_search_url }}'
+      };
+      window.cartStrings = { error:`{{ 'cart.general.error' | t }}`,quantityError:`{{ 'cart.general.quantity_error_html' | t: quantity: '[quantity]' }}`,discount_already: `{{ 'cart.general.discount_already_applied' | t }}`,discount_error: `{{ 'cart.general.discount_code_error' | t }}`,discount_ship: `{{ 'cart.general.shipping_discount_error' | t }}` };
+      window.variantStrings = {addToCart: `{{ 'products.product.add_to_cart' | t }}`,preOrder: `{{ 'products.product.pre_order' | t }}`,soldOut: `{{ 'products.product.sold_out' | t }}`,unavailable: `{{ 'products.product.unavailable' | t }}`,unavailable_with_option: `{{ 'products.product.value_unavailable' | t: option_value: '[value]' }}`,};
+	</script>
+ <style>
+
+/* ── Custom Fonts ── */
+@font-face {
+  font-family: 'Gill Sans';
+  src: url('https://cdn.shopify.com/s/files/1/0625/0522/2219/files/GillSans.ttc?v=1773912898') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Arial Custom';
+  src: url('https://cdn.shopify.com/s/files/1/0625/0522/2219/files/Arial.ttf?v=1773912897') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roots N Branches';
+  src: url('https://cdn.shopify.com/s/files/1/0625/0522/2219/files/Roots_N_Branches.ttf?v=1773912896') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+  .fl.tbg {
+    align-items: center;
+}
+
+.customtx.ftext.mb15 .ttlTxt {
+    font-size: 14px;
+    color: #333;
+}
+
+.ks-calculator-container, .ks-chart-container {
+    width: 50% !important;
+    display: table-cell;
+    padding: 0px 6px;
+}
+
+
+  .whatsapp-icon {
+    position: fixed;
+    bottom: 50px;
+    right: 20px;
+    z-index: 9999;
+    background-color: white;
+    border-radius: 50%;
+    width: 52px; /* Circle: width = height */
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+  }
+
+  .whatsapp-icon:hover {
+    transform: scale(1.1);
+  }
+
+  .whatsapp-icon img {
+    width: 32px;
+    height: 32px;
+  }
+  /* Mobile: change to bottom-right */
+  @media (max-width: 768px) {
+    .whatsapp-icon {
+      left: auto;
+      right: 20px;
+      bottom:80px;
+    }
+  }
+</style>
+<script>
+  // Target the specific div
+const element = document.querySelector('.custom-text.ttlTxt.rte');
+
+if (element) {
+  // Replace "Oh Krab!" with a span having a different font style
+  element.innerHTML = element.innerHTML.replace(
+    /Oh Krab!/g,
+    '<span style="font-family: Roots N Branches; font-style: italic;">Oh Krab!</span>'
+  );
+}
+
+</script>
+<script src='https://bridge.shopflo.com/js/shopflo.bundle.js' async></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Delay to allow for AJAX-loaded content (optional, you can increase to 1000ms if needed)
+    setTimeout(function () {
+      document.querySelectorAll(".rte p").forEach(function (paragraph) {
+        paragraph.innerHTML = paragraph.innerHTML
+          // Curly start + curly end
+          .replace(/[“]([^“”]+)[”]/g, `<span class="quoted-text">“$1”</span>`)
+          // Straight start + straight end
+          .replace(/"([^"]+)"/g, `<span class="quoted-text">"$1"</span>`)
+          // Curly start + straight end
+          .replace(/[“]([^“”]+)"/g, `<span class="quoted-text">“$1"</span>`)
+          // Straight start + curly end
+          .replace(/"([^“”]+)[”]/g, `<span class="quoted-text">"$1”</span>`);
+      });
+    }, 500); // adjust delay as needed
+  });
+</script>
+	<script src="{{ 'vendor.js' | asset_url }}" defer="defer"></script>
+  {%- endcapture -%}
+  {{mainjs | strip_newlines | remove: "	" }}  
+  {{ content_for_header }}
+  {%- comment -%}{%- render 'header-content' -%}{%- endcomment -%}
+</head>
+<body id="{{ page_title | handle }}" class="template-{{ template | split: '.' | first }} {% if settings.bodybg_img %}lazyload {% endif %}{%- if isRtl -%}rtl{%- endif -%}"
+	
+  
+  
+  
+  {%- if settings.bodybg_img %} data-bgset="{% render 'bgset', image: settings.bodybg_img %}" data-sizes="auto" data-parent-fit="cover" style="background-image:url('{{ settings.bodybg_img | img_url: '50x50' }});"{%- endif -%}>
+  {%- if settings.enable_age_varification -%}{% render 'age-check' %}{%- endif -%}
+  {%- if settings.layout_style == "boxedlayout" -%}<div class="page-wrapper layout-boxed">{%- endif -%}
+    {%- if settings.info-bar == 'top' -%}{% section 'top-info-panel' %}{%- endif -%}
+    {% render 'custom-announcement' %}
+  		{%- render 'header' -%}
+    	{%- if settings.info-bar == 'below' -%}{% section 'top-info-panel' %}{%- endif -%}
+		<main id="PageContainer" class="main-content {{ template | split: '.' | first }}" id="MainContent" role="main">{{ content_for_layout }}</main>
+    	{%- section 'footer' -%}
+        {%- section 'mobile-toolbar' -%}
+  	{% if settings.layout_style == "boxedlayout" %}</div>{% endif %}
+	{% section 'custom-colors' %}
+<link rel="stylesheet" href="{% if isRtl %}{{ 'defaultRtl.css' | asset_url }}{% else %}{{ 'default.css' | asset_url }}{% endif %}" type="text/css" media="all">
+<script src="{{ 'option_selection.js' | shopify_asset_url }}" defer="defer"></script>
+{%- if template.directory == 'customers' -%}
+    <script src="{{ 'shopify_common.js' | shopify_asset_url }}" defer="defer"></script>
+    <script src="{{ 'customer.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+{%- if content_for_layout contains 'data-stellar-background-ratio' -%}<script src="{{ 'stellar.js' | asset_url }}" defer></script>{%- endif -%}
+{%- if content_for_layout contains 'grid-masonary' or request.design_mode -%}<script src="{{ 'masonry.js' | asset_url }}" defer="defer"></script>{%- endif -%}
+{%- if settings.show_multiple_currencies and settings.currency_opt == 'script' -%}{%- render 'currencies' -%}{%- endif -%}
+{%- if settings.enable_site_animation -%}<script src="{{ 'wow.min.js' | asset_url }}" async></script>{%- endif -%}
+<script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+{%- if request.design_mode -%}
+    <script src="{{ 'admin.js' | asset_url }}" defer="defer"></script>
+    {{ 'admin.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+{%- if settings.ajax_cart and template != 'cart' -%}{%- render 'cart-drawer' -%}{%- endif -%}
+{% section 'exit-product-popup' %}
+{%- render 'theme-modals' -%}
+{%- if settings.show_sticky_arrow -%}<span id="site-scroll"><i class="at at-arw-up" aria-hidden="true"></i></span>{%- endif -%}
+<a href="https://wa.me/+919310126811" class="whatsapp-icon" target="_blank" aria-label="Chat on WhatsApp">
+  <img src="https://img.icons8.com/ios-filled/50/25D366/whatsapp.png" alt="WhatsApp" />
+</a>
+
+
+
+{% if template contains 'product' %}
+  {% if product and product.metafields.custom.video_link %}
+    {% render 'plp-video' %}
+  {% endif %}
+{% endif %}
+
+<script>
+  function openCheckout() {
+    if ((Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Calcutta') || (Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Kolkata')){   
+      handleFloCheckoutBtn();
+    } else {     // conditions for other checkouts
+      window.location.href = '/checkout';
+    }
+  }
+function opencart() {
+    if ((Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Calcutta') || (Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Kolkata')){   
+     handleFloCartBtn();
+    } else {     // conditions for other checkouts
+      window.location.href = '/cart';
+    }
+  }
+  function setBuyNowButton() {
+      if ((Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Calcutta') || (Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Kolkata')){  
+      document.querySelector('#flo-buy-now-button').style.setProperty('display', 'block', 'important');
+      document.querySelector('#shopify_buy_now_button_wrapper').style.setProperty('display', 'none', 'important');
+      return
+    }
+    // conditions for other checkouts
+    document.querySelector('#shopify_buy_now_button_wrapper').style.setProperty('display', 'block', 'important');
+    document.querySelector('#flo-buy-now-button').style.setProperty('display', 'none', 'important');
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    if(!window.location.pathname.includes('products')) return
+    setBuyNowButton();
+  });
+</script>
+
+</body>
+</html>

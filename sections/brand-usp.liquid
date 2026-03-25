@@ -1,0 +1,186 @@
+{% schema %}
+{
+  "name": "Brand Values",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section Heading",
+      "default": "RAISE THE BAR HIGH"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "value",
+      "name": "Value Item",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Title"
+        },
+        {
+          "type": "richtext",
+          "id": "description",
+          "label": "Description",
+          "default": "<p>Add your description here.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brand Values",
+      "blocks": [
+        {
+          "type": "value",
+          "settings": {
+            "title": "MADE BY WOMEN",
+            "description": "<p><strong>Who decipher the language of desire.</strong> Our collections aren't for the faint of fashion, they're for men who crave allure and command attention. Made By Women, For Men</p>"
+          }
+        },
+        {
+          "type": "value",
+          "settings": {
+            "title": "UNTAMED OPULENCE",
+            "description": "<p><strong>Luxury isn't just a label</strong>, it's an experience. We utilize only the purest, most exquisite fabrics. These aren't mere materials; they're whispers of indulgence against your skin.</p>"
+          }
+        },
+        {
+          "type": "value",
+          "settings": {
+            "title": "ETHICAL ELEGANCE",
+            "description": "<p>Beyond the exquisiteness lies a tale of ethical responsibility; <strong>By those who care, for those who care</strong>. An exclusive space where every stitch is crafted for a better tomorrow.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+  .brand-values-section {
+    padding: 60px 20px;
+    background-color: #f8f8f8;
+  }
+
+
+  .brand-values-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .values-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 60px;
+  }
+
+  .value-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .value-icon {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    margin-bottom: 20px;
+  }
+
+  .value-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+
+  .value-description {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #555;
+    max-width: 400px;
+  }
+
+  .value-description strong {
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+ /* Mobile styles */
+  @media (max-width: 768px) {
+    .brand-values-section {
+      padding: 40px 0;
+    }
+
+    .brand-values-heading {
+      font-size: 20px;
+      margin-bottom: 40px;
+      padding: 0 20px;
+    }
+
+    .values-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      padding: 0 20px;
+    }
+
+    .value-icon {
+      width: 100px;
+      height: 100px;
+    }
+
+    .value-title {
+      font-size: 11px;
+      margin-bottom: 15px;
+    }
+
+    .value-description {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+  }
+</style>
+
+<div class="brand-values-section">
+  {% if section.settings.heading != blank %}
+    <h2 class="h3 ft2" style="text-align:center; font-weight:400; color:#294da2; ">{{ section.settings.heading }}</h2>
+  {% endif %}
+
+  <div class="brand-values-container">
+    <div class="values-grid">
+      {% for block in section.blocks %}
+        <div class="value-item" {{ block.shopify_attributes }}>
+          {% if block.settings.icon != blank %}
+            <img 
+              src="{{ block.settings.icon | image_url: width: 300 }}" 
+              alt="{{ block.settings.title }}"
+              class="value-icon"
+              loading="lazy"
+            >
+          {% endif %}
+          
+          {% if block.settings.title != blank %}
+            <h3 class="value-title">{{ block.settings.title }}</h3>
+          {% endif %}
+          
+          {% if block.settings.description != blank %}
+            <div class="value-description">
+              {{ block.settings.description }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
