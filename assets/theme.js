@@ -1247,9 +1247,6 @@ document.querySelectorAll('.mtmltxt').forEach(function(item){
 });
 
 
-
-
-
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
@@ -2069,8 +2066,6 @@ class CartDrawer extends HTMLElement {
     cartDrawerNote.addEventListener('click', (e) => {
       e.currentTarget.setAttribute('aria-expanded', !e.currentTarget.closest('details').hasAttribute('open'));
     });
-
-    //cartDrawerNote.parentElement.addEventListener('keyup', onKeyUpEscape);
   }
 
   renderContents(parsedState) {
