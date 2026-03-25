@@ -1,441 +1,227 @@
-{%- comment -%}
-----------------------------------------------------------------------------------------------------------------------
-VARIANT PICKER
-----------------------------------------------------------------------------------------------------------------------
-
-Render the variant picker option selectors.
-
-********************************************
-Supported variables
-********************************************
-
-* product: the product for which to render the selector (required)
-* form_id: the ID of the form to which the variant picker belongs (required)
-* context: the context of the variant picker. Can be "main_product", "featured_product" or "quick_buy" (required)
-* hide_sold_out_variants: if set to true, the sold out or unavailable variants are hidden
-* selector_style: the selector style to use for the main selectors
-* swatch_selector_style: the selector style to use for the dedicated swatch selectors
-* variant_image_options: a list of option names for which to use the variant image selector mode
-* size_chart_page: the page to use for the size chart
-{%- endcomment -%}
-
-{%- liquid
-  assign color_label_list = 'general.label.color' | t | replace: ', ', ',' | downcase | split: ','
-  assign size_label_list = 'general.label.size' | t | replace: ', ', ',' | downcase | split: ','
-  assign variant_image_options = variant_image_options | replace: ', ', ',' | downcase | split: ','
-
-  if context == 'main_product'
-    assign is_main_product = true
-  endif
--%}
-
-{%- unless product.has_only_default_variant -%}
-  <variant-picker class="variant-picker v-stack gap-4" section-id="{{ section.id }}" form-id="{{ form_id }}" context="{{ context }}" handle="{{ product.handle }}" {% if context == 'main_product' %}update-url{% endif %}>
-    {%- comment -%}
-    The variant data is outputted as a JSON, which allows the theme to emit an event with the data when the variant changes. This must not be removed.
-    {%- endcomment -%}
-    <script data-variant type="application/json">
-      {{- product.selected_or_first_available_variant | json -}}
-    </script>
-
-    {%- for option in product.options_with_values -%}
-      {% liquid
-        assign option_downcase = option.name | downcase
-        assign resolved_option_selector_style = selector_style
-
-        assign swatch_count = option.values | map: 'swatch' | compact | size
-
-        if swatch_count > 0 and swatch_selector_style != 'none'
-          assign resolved_option_selector_style = swatch_selector_style
+    {%- unless product.has_only_default_variant -%}
+    {%- liquid
+        assign blkst = block.settings
+        assign cltype = settings.sw_type
+        assign othervr = settings.othervr
+        assign hidesoldout = ''
+        if settings.swsold
+            assign hidesoldout = 'hidesoldout'
         endif
-
-        if swatch_count == 0 and color_label_list contains option_downcase and swatch_selector_style != 'none'
-          assign resolved_option_selector_style = swatch_selector_style
+        if isQuick
+            if settings.qvrsold
+                assign hidesoldout = 'hidesoldout'
+            else
+                assign hidesoldout = ''
+            endif
+            assign cltype = settings.cltype
+            assign othervr = settings.othervr
         endif
-
-        if variant_image_options contains option_downcase
-          assign resolved_option_selector_style = 'variant_image'
-        endif
-      %}
-
-      <fieldset class="variant-picker__option v-stack gap-2">
-        <div class="variant-picker__option-info h-stack justify-between gap-2">
-          <div class="h-stack gap-1">
-            <legend>{{ option.name }}:</legend>
-
-            {%- if resolved_option_selector_style == 'swatch' or resolved_option_selector_style == 'variant_image' -%}
-              <span>{{ option.selected_value }}</span>
+    -%}
+    <variant-selects id="variant-selects-{{ sectionId }}" class="db mb{{ blkst.bm | default: 20 }} {{ hidesoldout }}" data-section="{{ sectionId }}" data-msldier="pis{{ sectionId }}" data-url="{{ product.url }}"
+        {%- if update_url == false %} data-update-url="false"{% endif %} {{ block.shopify_attributes }}>
+        {%- for option in product.options_with_values -%}
+        {%- liquid
+            assign optionIndex = option.position | minus: 1
+            assign is_color = false
+            assign sizechart = false
+            assign downcased_option = option.name | downcase
+            assign colorOptions = settings.colorOpt | downcase | replace:", ","," | replace:" , ","," | replace:" ,","," | split: ","
+            if colorOptions contains downcased_option
+                assign is_color = true
+            endif
+            for value in option.values
+            if value.swatch.image or value.swatch.color
+                assign is_color = true
+            endif
+            endfor
+            if sizeOptions contains downcased_option
+                assign sizechart = true
+            endif
+        -%}
+        {% capture sizechartlink %}
+            {%- if sizechart and settings.sizechart_link -%}
+                <a href="#sizechart" class="mfp sizelink" data-effect="mfp-zoom-in"><i class="at at-ruler"></i> {{ 'products.product.size_chart' | t }}</a>
             {%- endif -%}
-          </div>
-
-          {%- if size_chart_page != blank and size_label_list contains option_downcase -%}
-            {%- capture id -%}size-chart-{{ option.position }}-{{ form_id }}{%- endcapture -%}
-
-            <button type="button" class="link" aria-controls="{{ id | escape }}" aria-expanded="false">
-              {{- 'product.general.size_chart' | t -}}
-            </button>
-
-            <x-modal id="{{ id | escape }}" class="modal modal--lg color-scheme color-scheme--dialog">
-              <span class="h5" slot="header">{{ size_chart_page.title }}</span>
-              <div class="prose">
-                {{- size_chart_page.content -}}
-              </div>
-            </x-modal>
-          {%- endif -%}
-        </div>
-
-        {%- assign name = 'option' | append: option.position -%}
-
-        {%- if resolved_option_selector_style == 'dropdown' -%}
-          <div class="relative">
-            {%- capture popover_id -%}popover-variant-dropdown-{{ section.id }}-{{ product.id }}-{{ option.position }}{%- endcapture -%}
-
-            <button type="button" class="select" aria-controls="{{ popover_id }}" aria-expanded="false">
-              <span id="{{ popover_id }}-selected-value">{{- option.selected_value -}}</span>
-              {%- render 'icon' with 'dropdown-chevron' -%}
-            </button>
-
-            <x-popover id="{{ popover_id }}" class="popover popover--bottom-start color-scheme color-scheme--dialog" close-on-listbox-change>
-              <p class="h5" slot="header">{{ option.name }}</p>
-
-              <div class="popover__value-list">
-                {%- assign param_name = form_id | append: '-option' | append: option.position -%}
-
-                {%- for option_value in option.values -%}
-                  {%- capture option_markup -%}
-                    <span>{{- option_value -}}</span>
-                    {%- if option_value.available == false -%}
-                      <span>
-                        {%- if option_value.variant == nil -%}
-                          {{- 'product.general.unavailable_button' | t -}}
-                        {%- else -%}
-                          {{- 'product.general.sold_out_badge' | t -}}
-                        {%- endif -%}
-                      </span>
-                    {%- endif -%}
-                  {%- endcapture -%}
-
-                  {%- if hide_sold_out_variants == false or option_value.available or option_value.selected -%}
-                    {%- if is_main_product and option_value.product_url != blank -%}
-                      <div class="popover__value-option">
-                        {%- if option_value.selected -%}
-                          <input class="sr-only" type="radio" id="{{ param_name }}-{{ option_value.id }}" form="{{ form_id }}" name="{{ param_name }}" data-option-position="{{ option.position }}" value="{{ option_value.id }}" checked>
-                        {%- endif -%}
-                        <a href="{{ option_value.variant.url | default: option_value.product_url }}" class="h-stack justify-between gap-2">
-                          {{- option_markup -}}
-                        </a>
-                      </div>
-                    {%- else -%}
-                      <label class="popover__value-option h-stack justify-between gap-2" for="{{ param_name }}-{{ option_value.id }}">
-                        <input class="sr-only" form="{{ form_id }}" type="radio" id="{{ param_name }}-{{ option_value.id }}" name="{{ param_name }}" {% if option_value.product_url != blank %}data-product-url="{{ option_value.product_url | escape }}"{% endif %} data-option-position="{{ option.position }}" value="{{ option_value.id }}" {% if option_value.selected %}checked{% endif %}>
-                        {{- option_markup -}}
-                      </label>
-                    {%- endif -%}
-                  {%- endif -%}
-                {%- endfor -%}
-              </div>
-            </x-popover>
-          </div>
+        {% endcapture %}
+        {%- if is_color and cltype != 'dd' -%}
+            <fieldset class="product-form__input swatch fl f-wrap pvOpt{{ optionIndex }}">
+                <div class="header">{{ option.name }}: <span class="ml5" data-opt="{{ option.name }}">{{- option.selected_value -}}</span></div>
+                {%- render 'variant-options', product:product, product_form_id:product_form_id, sectionId:sectionId, option:option, cltype:cltype, othervr:othervr, is_color:is_color -%}
+            </fieldset>
+        {%- elsif is_color and cltype == 'dd' -%}
+            <div class="product-form__input w_100 pvOpt{{ optionIndex }}">
+            <label class="header" for="Option-{{ sectionId }}-{{ forloop.index0 }}">{{ option.name }}: <span class="ml5" data-opt="options[{{ option.name | escape }}]">{{- option.selected_value -}}</span></label>
+                <select id="Option-{{ sectionId }}-{{ forloop.index0 }}" class="single-option-selector w_100" name="options[{{ option.name | escape }}]" form="{{ product_form_id }}">
+                    {%- render 'variant-options', product: product, product_form_id:product_form_id, option:option, cltype:cltype, othervr:othervr -%}
+                </select>
+            </div>
+        {%- elsif othervr == 'sw' -%}
+            <fieldset class="product-form__input mfp-link swatch fl f-wrap pvOpt{{ optionIndex }}">
+                <div class="header fl f-jcs f-aic mb5">
+                    <span>{{ option.name }}: <span class="ml5" data-opt="{{ option.name }}">{{- option.selected_value -}}</span></span>
+                    {{- sizechartlink -}}
+                </div>
+                {%- render 'variant-options', product:product, product_form_id:product_form_id, sectionId:sectionId, option: option, cltype:cltype, othervr:othervr, is_color: false -%}
+            </fieldset>
         {%- else -%}
-          {%- liquid
-            case resolved_option_selector_style
-              when 'swatch' or 'variant_image' or 'block' or 'block_swatch'
-                assign list_classes = 'h-stack gap-2.5 wrap'
-              else
-                assign list_classes = ''
-            endcase
-          -%}
-
-          <div class="variant-picker__option-values {{ list_classes }}">
-            {% liquid
-              assign name = form_id | append: '-option' | append: option.position
-
-              for option_value in option.values
-                case resolved_option_selector_style
-                  when 'variant_image'
-                    render 'option-value', type: 'thumbnail', form: form_id, option_value: option_value, param_name: name, option_position: option.position, hide_if_disabled: hide_sold_out_variants, reload_page_for_combined_products: is_main_product, id_prefix: forloop.index
-                  when 'swatch'
-                    render 'option-value', type: 'swatch', form: form_id, option_value: option_value, param_name: name, option_position: option.position, hide_if_disabled: hide_sold_out_variants, reload_page_for_combined_products: is_main_product, id_prefix: forloop.index
-                  when 'block'
-                    render 'option-value', type: 'block', form: form_id, option_value: option_value, param_name: name, option_position: option.position, hide_if_disabled: hide_sold_out_variants, reload_page_for_combined_products: is_main_product, id_prefix: forloop.index
-                  when 'block_swatch'
-                    render 'option-value', type: 'block', form: form_id, option_value: option_value, param_name: name, option_position: option.position, show_swatch: true, hide_if_disabled: hide_sold_out_variants, reload_page_for_combined_products: is_main_product, id_prefix: forloop.index
-                endcase
-              endfor
-            %}
-          </div>
+            <div class="product-form__input w_100 mfp-link pvOpt{{ optionIndex }}">
+                <div class="header fl f-jcs f-aic mb5" for="Option-{{ sectionId }}-{{ forloop.index0 }}">
+                    <span>{{ option.name }}: <span class="ml5" data-opt="options[{{ option.name | escape }}]">{{- option.selected_value -}}</span></span>
+                    {{- sizechartlink -}}
+                </div>
+                <select id="Option-{{ sectionId }}-{{ forloop.index0 }}" class="single-option-selector w_100" name="options[{{ option.name | escape }}]" form="{{ product_form_id }}">
+                    {%- render 'variant-options', product:product, product_form_id:product_form_id, option: option, cltype:cltype, othervr:othervr -%}
+                </select>
+            </div>
         {%- endif -%}
-      </fieldset>
-    {%- endfor -%}
+        {%- endfor -%}
 
-    {% comment %} ===== CUSTOM SIZE MEASUREMENT FORM ===== {% endcomment %}
-    <div id="custom-size-fields" style="display:none; margin-top: 1rem;">
-      <div class="measurements-grid">
-        <div class="labels-column">
-          <div class="measurement-label">Top/Upper Length</div>
-          <div class="measurement-label">Shoulder</div>
-          <div class="measurement-label">Bust</div>
-          <div class="measurement-label">Hip</div>
-          <div class="measurement-label">Armhole</div>
-          <div class="measurement-label">Bicep</div>
-          <div class="measurement-label">Sleeve length</div>
-          <div class="measurement-label spacer" style="visibility:hidden; height:20px;"></div>
-          <div class="measurement-label">Lower Length</div>
-          <div class="measurement-label">Waist</div>
-          <div class="measurement-label">Thigh</div>
-        </div>
+        {% comment %} ===== CUSTOM SIZE MEASUREMENT FORM ===== {% endcomment %}
+        {%- assign has_custom_variant = false -%}
+        {%- for variant in product.variants -%}
+            {%- for opt in variant.options -%}
+                {%- if opt contains 'custom' or opt contains 'Custom' -%}
+                    {%- assign has_custom_variant = true -%}
+                {%- endif -%}
+            {%- endfor -%}
+            {%- if variant.title contains 'custom' or variant.title contains 'Custom' -%}
+                {%- assign has_custom_variant = true -%}
+            {%- endif -%}
+        {%- endfor -%}
 
-        <div class="inputs-column">
-          <input type="text" name="properties[Top/Upper Length]" form="{{ form_id }}" placeholder="inches/cm">
-          <input type="text" name="properties[Shoulder]" form="{{ form_id }}" placeholder="inches/cm">
-          <input type="text" name="properties[Bust]" form="{{ form_id }}" placeholder="inches/cm">
-          <input type="text" name="properties[Hip]" form="{{ form_id }}" placeholder="inches/cm">
-          <input type="text" name="properties[Armhole]" form="{{ form_id }}" placeholder="inches/cm">
-          <input type="text" name="properties[Bicep]" form="{{ form_id }}" placeholder="inches/cm">
-          <input type="text" name="properties[Sleeve length]" form="{{ form_id }}" placeholder="inches/cm">
-          <div style="height:20px;"></div>
-          <input type="text" name="properties[Lower Length]" form="{{ form_id }}" placeholder="inches/cm">
-          <input type="text" name="properties[Waist]" form="{{ form_id }}" placeholder="inches/cm">
-          <input type="text" name="properties[Thigh]" form="{{ form_id }}" placeholder="inches/cm">
-        </div>
-
-        <div class="images-column">
-          <div class="image-container">
-            <img src="https://cdn.shopify.com/s/files/1/0387/9609/9724/files/upper.png?v=1773213530" alt="Upper Body Measurement Guide" class="measurement-image" loading="lazy">
-            <span class="image-label">Upper Measurements</span>
+        {%- if has_custom_variant -%}
+        <div id="custom-size-fields" style="display:none; margin-top: 16px;">
+          <div class="csf-grid">
+            <div class="csf-labels">
+              <div class="csf-label">Top/Upper Length</div>
+              <div class="csf-label">Shoulder</div>
+              <div class="csf-label">Bust</div>
+              <div class="csf-label">Hip</div>
+              <div class="csf-label">Armhole</div>
+              <div class="csf-label">Bicep</div>
+              <div class="csf-label">Sleeve Length</div>
+              <div class="csf-spacer"></div>
+              <div class="csf-label">Lower Length</div>
+              <div class="csf-label">Waist</div>
+              <div class="csf-label">Thigh</div>
+            </div>
+            <div class="csf-inputs">
+              <input type="text" name="properties[Top/Upper Length]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+              <input type="text" name="properties[Shoulder]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+              <input type="text" name="properties[Bust]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+              <input type="text" name="properties[Hip]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+              <input type="text" name="properties[Armhole]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+              <input type="text" name="properties[Bicep]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+              <input type="text" name="properties[Sleeve Length]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+              <div class="csf-spacer"></div>
+              <input type="text" name="properties[Lower Length]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+              <input type="text" name="properties[Waist]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+              <input type="text" name="properties[Thigh]" form="{{ product_form_id }}" placeholder="inches/cm" class="csf-input">
+            </div>
+            <div class="csf-images">
+              <div class="csf-img-box">
+                <img src="https://cdn.shopify.com/s/files/1/0387/9609/9724/files/upper.png?v=1773213530" alt="Upper Body" loading="lazy">
+                <span>Upper Measurements</span>
+              </div>
+              <div class="csf-img-box">
+                <img src="https://cdn.shopify.com/s/files/1/0387/9609/9724/files/lower.png?v=1773213581" alt="Lower Body" loading="lazy">
+                <span>Lower Measurements</span>
+              </div>
+            </div>
           </div>
-          <div class="image-container">
-            <img src="https://cdn.shopify.com/s/files/1/0387/9609/9724/files/lower.png?v=1773213581" alt="Lower Body Measurement Guide" class="measurement-image" loading="lazy">
-            <span class="image-label">Lower Measurements</span>
+          <div class="csf-notes">
+            <label>Special Instructions</label>
+            <textarea name="properties[Special Instructions]" form="{{ product_form_id }}" rows="3" placeholder="Any special requirements..."></textarea>
           </div>
         </div>
-      </div>
 
-      <div class="special-instructions-section">
-        <label for="SpecialInstructions-{{ form_id }}">Special Instructions</label>
-        <textarea id="SpecialInstructions-{{ form_id }}" name="properties[Special Instructions]" rows="3" placeholder="Any special requirements or notes..." form="{{ form_id }}"></textarea>
-      </div>
-    </div>
+        <style>
+          #custom-size-fields { background:#fff; border:1px solid #e8e8e8; border-radius:8px; padding:20px; box-sizing:border-box; }
+          .csf-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:20px; }
+          .csf-labels, .csf-inputs { display:flex; flex-direction:column; gap:12px; }
+          .csf-label { height:38px; display:flex; align-items:center; font-size:13px; font-weight:500; color:#1f2937; border-bottom:1px dotted #e5e7eb; }
+          .csf-spacer { height:20px; }
+          .csf-input { width:100%; height:38px; padding:0 10px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; box-sizing:border-box; }
+          .csf-input:focus { outline:none; border-color:#000; }
+          .csf-images { display:flex; flex-direction:column; gap:16px; }
+          .csf-img-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:10px; text-align:center; }
+          .csf-img-box img { width:100%; max-height:160px; object-fit:contain; }
+          .csf-img-box span { display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:#6b7280; margin-top:6px; }
+          .csf-notes { display:flex; flex-direction:column; gap:6px; padding-top:16px; border-top:1px solid #f3f4f6; }
+          .csf-notes label { font-size:13px; font-weight:600; color:#1f2937; }
+          .csf-notes textarea { width:100%; padding:10px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; font-family:inherit; resize:vertical; box-sizing:border-box; }
+          .csf-notes textarea:focus { outline:none; border-color:#000; }
+          @media(max-width:768px) {
+            .csf-grid { grid-template-columns:1fr 1fr; }
+            .csf-images { grid-column:span 2; flex-direction:row; }
+          }
+          @media(max-width:480px) {
+            .csf-grid { grid-template-columns:1fr 1fr; gap:8px; }
+            .csf-images { grid-column:span 2; flex-direction:row; }
+            .csf-label { font-size:12px; height:34px; }
+            .csf-input { height:34px; font-size:12px; }
+          }
+        </style>
 
-    <style>
-      #custom-size-fields {
-        background: #ffffff;
-        border: 1px solid #e8e8e8;
-        padding: 24px;
-        border-radius: 8px;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      #custom-size-fields .measurements-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 32px;
-        align-items: start;
-      }
-      #custom-size-fields .labels-column,
-      #custom-size-fields .inputs-column {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-      #custom-size-fields .measurement-label {
-        height: 40px;
-        display: flex;
-        align-items: center;
-        font-size: 14px;
-        font-weight: 500;
-        color: #1f2937;
-        border-bottom: 1px dotted #e5e7eb;
-      }
-      #custom-size-fields .inputs-column input {
-        width: 100%;
-        height: 40px;
-        padding: 0 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 14px;
-        box-sizing: border-box;
-      }
-      #custom-size-fields .inputs-column input:focus {
-        outline: none;
-        border-color: #000;
-      }
-      #custom-size-fields .images-column {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-      }
-      #custom-size-fields .image-container {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 12px;
-        box-sizing: border-box;
-      }
-      #custom-size-fields .measurement-image {
-        width: 100%;
-        height: auto;
-        max-height: 180px;
-        object-fit: contain;
-      }
-      #custom-size-fields .image-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: #4b5563;
-        text-align: center;
-        text-transform: uppercase;
-        border-top: 1px solid #e5e7eb;
-        padding-top: 4px;
-      }
-      #custom-size-fields .special-instructions-section {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding-top: 24px;
-        border-top: 2px solid #f3f4f6;
-      }
-      #custom-size-fields .special-instructions-section label {
-        font-size: 14px;
-        font-weight: 600;
-        color: #1f2937;
-      }
-      #custom-size-fields .special-instructions-section textarea {
-        width: 100%;
-        min-height: 80px;
-        padding: 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 14px;
-        font-family: inherit;
-        resize: vertical;
-        box-sizing: border-box;
-      }
-      #custom-size-fields .special-instructions-section textarea:focus {
-        outline: none;
-        border-color: #000;
-      }
-      @media (max-width: 768px) {
-        #custom-size-fields .measurements-grid {
-          grid-template-columns: 1fr 1fr;
-        }
-        #custom-size-fields .images-column {
-          grid-column: span 2;
-          flex-direction: row;
-        }
-      }
-      @media (max-width: 480px) {
-        #custom-size-fields { padding: 16px; }
-        #custom-size-fields .measurements-grid {
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-        }
-        #custom-size-fields .images-column {
-          grid-column: span 2;
-          flex-direction: row;
-        }
-        #custom-size-fields .measurement-label { font-size: 12px; height: 36px; }
-        #custom-size-fields .inputs-column input { height: 36px; font-size: 13px; }
-      }
-    </style>
+        <script>
+          (function(){
+            function toggleCustomForm() {
+              var el = document.getElementById('custom-size-fields');
+              if (!el) return;
 
-    <script>
-      (function() {
-        function initCustomSizeForm() {
-          var fieldsEl = document.getElementById('custom-size-fields');
-          if (!fieldsEl) return;
+              var vs = document.querySelector('variant-selects');
+              if (!vs) return;
 
-          function isCustomVariantSelected() {
-            var variantPicker = document.querySelector('variant-picker');
-            if (!variantPicker) return false;
+              // Check selected option values
+              var isCustom = false;
 
-            // Check 1: selected value spans in option info
-            var spans = variantPicker.querySelectorAll('.variant-picker__option-info span');
-            for (var i = 0; i < spans.length; i++) {
-              if (spans[i].textContent.trim().toLowerCase().indexOf('custom') !== -1) return true;
-            }
+              // Check checked radio buttons
+              var radios = vs.querySelectorAll('input[type="radio"]:checked');
+              for (var i = 0; i < radios.length; i++) {
+                if (radios[i].value.toLowerCase().indexOf('custom') !== -1) { isCustom = true; break; }
+              }
 
-            // Check 2: the script[data-variant] JSON
-            var variantScript = variantPicker.querySelector('script[data-variant]');
-            if (variantScript) {
-              try {
-                var v = JSON.parse(variantScript.textContent);
-                if (v && v.title && v.title.toLowerCase().indexOf('custom') !== -1) return true;
-                if (v && v.options) {
-                  for (var j = 0; j < v.options.length; j++) {
-                    if (String(v.options[j]).toLowerCase().indexOf('custom') !== -1) return true;
-                  }
+              // Check select dropdowns
+              if (!isCustom) {
+                var selects = vs.querySelectorAll('select');
+                for (var j = 0; j < selects.length; j++) {
+                  if (selects[j].value.toLowerCase().indexOf('custom') !== -1) { isCustom = true; break; }
                 }
-              } catch(e) {}
+              }
+
+              // Check visible swatch label text
+              if (!isCustom) {
+                var swatchLabels = vs.querySelectorAll('[data-opt]');
+                for (var k = 0; k < swatchLabels.length; k++) {
+                  if (swatchLabels[k].textContent.toLowerCase().indexOf('custom') !== -1) { isCustom = true; break; }
+                }
+              }
+
+              el.style.display = isCustom ? 'block' : 'none';
             }
 
-            // Check 3: checked radio input labels
-            var checked = variantPicker.querySelectorAll('input[type="radio"]:checked');
-            for (var k = 0; k < checked.length; k++) {
-              var lbl = document.querySelector('label[for="' + checked[k].id + '"]');
-              if (lbl && lbl.textContent.toLowerCase().indexOf('custom') !== -1) return true;
+            function init() {
+              var vs = document.querySelector('variant-selects');
+              if (!vs) return;
+              vs.addEventListener('change', function(){ setTimeout(toggleCustomForm, 50); });
+              toggleCustomForm();
             }
 
-            return false;
-          }
-
-          function toggleForm() {
-            if (isCustomVariantSelected()) {
-              fieldsEl.style.display = 'block';
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', init);
             } else {
-              fieldsEl.style.display = 'none';
+              init();
             }
-          }
+          })();
+        </script>
+        {%- endif -%}
 
-          // Listen on variant-picker change events
-          var variantPicker = document.querySelector('variant-picker');
-          if (variantPicker) {
-            variantPicker.addEventListener('change', function() {
-              setTimeout(toggleForm, 50);
-            });
-          }
-
-          // Listen for theme variant change events
-          document.addEventListener('variant:change', function() {
-            setTimeout(toggleForm, 50);
-          });
-
-          // Watch script[data-variant] for content changes
-          if (variantPicker) {
-            var variantScript = variantPicker.querySelector('script[data-variant]');
-            if (variantScript && window.MutationObserver) {
-              var observer = new MutationObserver(function() {
-                setTimeout(toggleForm, 50);
-              });
-              observer.observe(variantScript, { childList: true, characterData: true, subtree: true });
-            }
-          }
-
-          // Run on load
-          toggleForm();
-        }
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initCustomSizeForm);
-        } else {
-          initCustomSizeForm();
-        }
-      })();
-    </script>
-
-    {%- unless request.design_mode -%}
-      <noscript>
-        {%- assign input_label = 'product.general.variant' | t -%}
-        {%- capture select_options -%}
-          {%- for variant in product.variants -%}
-            <option {% if variant == product.selected_or_first_available_variant %}selected="selected"{% endif %} {% unless variant.available %}disabled="disabled"{% endunless %} value="{{ variant.id }}">{{ variant.title }} - {{ variant.price | money }}</option>
-          {%- endfor -%}
-        {%- endcapture -%}
-        {%- render 'select', label: input_label, form: form_id, name: 'id', options: select_options -%}
-      </noscript>
+        <script type="application/json" id="variants{{ sectionId }}">{{ product.variants | json }}</script>
+    </variant-selects>
     {%- endunless -%}
-  </variant-picker>
-{%- endunless -%}
+
+    {% if settings.goBuynowEnable %}
+    <button type="button" class="disabled shopify-payment-button__button shopify-payment-button__button--unbranded" disabled onclick="onBuyNowClick(this)" id="gokwik-buy-now"{% if settings.hideFlow %} style="display:none !important;" {% endif %}>{{ settings.buynow-titile }}
+    <div style="display:none" class="addloadr" id="abtn-loader"><div class="cir-loader">Loading..</div></div>
+    </button>
+    {% endif %}
