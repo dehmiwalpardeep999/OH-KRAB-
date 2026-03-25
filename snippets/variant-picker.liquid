@@ -122,87 +122,85 @@
           </div>
         </div>
 
-        <style>
-          #custom-size-fields { background:#fff; border:1px solid #e8e8e8; border-radius:8px; padding:20px; box-sizing:border-box; }
-          .csf-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:20px; }
-          .csf-labels, .csf-inputs { display:flex; flex-direction:column; gap:12px; }
-          .csf-label { height:38px; display:flex; align-items:center; font-size:13px; font-weight:500; color:#1f2937; border-bottom:1px dotted #e5e7eb; }
-          .csf-spacer { height:20px; }
-          .csf-input { width:100%; height:38px; padding:0 10px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; box-sizing:border-box; }
-          .csf-input:focus { outline:none; border-color:#000; }
-          .csf-images { display:flex; flex-direction:column; gap:16px; }
-          .csf-img-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:10px; text-align:center; }
-          .csf-img-box img { width:100%; max-height:160px; object-fit:contain; }
-          .csf-img-box span { display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:#6b7280; margin-top:6px; }
-          .csf-notes { display:flex; flex-direction:column; gap:6px; padding-top:16px; border-top:1px solid #f3f4f6; }
-          .csf-notes label { font-size:13px; font-weight:600; color:#1f2937; }
-          .csf-notes textarea { width:100%; padding:10px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; font-family:inherit; resize:vertical; box-sizing:border-box; }
-          .csf-notes textarea:focus { outline:none; border-color:#000; }
-          @media(max-width:768px) {
-            .csf-grid { grid-template-columns:1fr 1fr; }
-            .csf-images { grid-column:span 2; flex-direction:row; }
-          }
-          @media(max-width:480px) {
-            .csf-grid { grid-template-columns:1fr 1fr; gap:8px; }
-            .csf-images { grid-column:span 2; flex-direction:row; }
-            .csf-label { font-size:12px; height:34px; }
-            .csf-input { height:34px; font-size:12px; }
-          }
-        </style>
-
-        <script>
-          (function(){
-            function toggleCustomForm() {
-              var el = document.getElementById('custom-size-fields');
-              if (!el) return;
-
-              var vs = document.querySelector('variant-selects');
-              if (!vs) return;
-
-              var isCustom = false;
-
-              // Check checked radio buttons
-              var radios = vs.querySelectorAll('input[type="radio"]:checked');
-              for (var i = 0; i < radios.length; i++) {
-                if (radios[i].value.toLowerCase().indexOf('custom') !== -1) { isCustom = true; break; }
-              }
-
-              // Check select dropdowns
-              if (!isCustom) {
-                var selects = vs.querySelectorAll('select');
-                for (var j = 0; j < selects.length; j++) {
-                  if (selects[j].value.toLowerCase().indexOf('custom') !== -1) { isCustom = true; break; }
-                }
-              }
-
-              // Check visible swatch label text
-              if (!isCustom) {
-                var swatchLabels = vs.querySelectorAll('[data-opt]');
-                for (var k = 0; k < swatchLabels.length; k++) {
-                  if (swatchLabels[k].textContent.toLowerCase().indexOf('custom') !== -1) { isCustom = true; break; }
-                }
-              }
-
-              el.style.display = isCustom ? 'block' : 'none';
-            }
-
-            function init() {
-              var vs = document.querySelector('variant-selects');
-              if (!vs) return;
-              vs.addEventListener('change', function(){ setTimeout(toggleCustomForm, 50); });
-              toggleCustomForm();
-            }
-
-            if (document.readyState === 'loading') {
-              document.addEventListener('DOMContentLoaded', init);
-            } else {
-              init();
-            }
-          })();
-        </script>
-
         <script type="application/json" id="variants{{ sectionId }}">{{ product.variants | json }}</script>
     </variant-selects>
+
+    <style>
+      #custom-size-fields { background:#fff; border:1px solid #e8e8e8; border-radius:8px; padding:20px; box-sizing:border-box; }
+      .csf-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:20px; }
+      .csf-labels, .csf-inputs { display:flex; flex-direction:column; gap:12px; }
+      .csf-label { height:38px; display:flex; align-items:center; font-size:13px; font-weight:500; color:#1f2937; border-bottom:1px dotted #e5e7eb; }
+      .csf-spacer { height:20px; }
+      .csf-input { width:100%; height:38px; padding:0 10px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; box-sizing:border-box; }
+      .csf-input:focus { outline:none; border-color:#000; }
+      .csf-images { display:flex; flex-direction:column; gap:16px; }
+      .csf-img-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:10px; text-align:center; }
+      .csf-img-box img { width:100%; max-height:160px; object-fit:contain; }
+      .csf-img-box span { display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:#6b7280; margin-top:6px; }
+      .csf-notes { display:flex; flex-direction:column; gap:6px; padding-top:16px; border-top:1px solid #f3f4f6; }
+      .csf-notes label { font-size:13px; font-weight:600; color:#1f2937; }
+      .csf-notes textarea { width:100%; padding:10px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; font-family:inherit; resize:vertical; box-sizing:border-box; }
+      .csf-notes textarea:focus { outline:none; border-color:#000; }
+      @media(max-width:768px) {
+        .csf-grid { grid-template-columns:1fr 1fr; }
+        .csf-images { grid-column:span 2; flex-direction:row; }
+      }
+      @media(max-width:480px) {
+        .csf-grid { grid-template-columns:1fr 1fr; gap:8px; }
+        .csf-images { grid-column:span 2; flex-direction:row; }
+        .csf-label { font-size:12px; height:34px; }
+        .csf-input { height:34px; font-size:12px; }
+      }
+    </style>
+
+    <script>
+      (function(){
+        function toggleCustomForm() {
+          var el = document.getElementById('custom-size-fields');
+          if (!el) return;
+
+          var vs = document.querySelector('variant-selects');
+          if (!vs) return;
+
+          var isCustom = false;
+
+          var radios = vs.querySelectorAll('input[type="radio"]:checked');
+          for (var i = 0; i < radios.length; i++) {
+            if (radios[i].value.toLowerCase().indexOf('custom') !== -1) { isCustom = true; break; }
+          }
+
+          if (!isCustom) {
+            var selects = vs.querySelectorAll('select');
+            for (var j = 0; j < selects.length; j++) {
+              if (selects[j].value.toLowerCase().indexOf('custom') !== -1) { isCustom = true; break; }
+            }
+          }
+
+          if (!isCustom) {
+            var swatchLabels = vs.querySelectorAll('[data-opt]');
+            for (var k = 0; k < swatchLabels.length; k++) {
+              if (swatchLabels[k].textContent.toLowerCase().indexOf('custom') !== -1) { isCustom = true; break; }
+            }
+          }
+
+          el.style.display = isCustom ? 'block' : 'none';
+        }
+
+        function init() {
+          var vs = document.querySelector('variant-selects');
+          if (!vs) return;
+          vs.addEventListener('change', function(){ setTimeout(toggleCustomForm, 50); });
+          toggleCustomForm();
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+
     {%- endunless -%}
 
     {% if settings.goBuynowEnable %}
