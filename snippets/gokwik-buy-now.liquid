@@ -5,8 +5,7 @@
     {% endif %}
     
     {% comment %} Custom Form Logic - Added for buy button page {% endcomment %}
-    {%- if settings.show_custom_formor settings.show_custom_form -%}
-    <div class="custom-form-wrapper mt15">
+    <div class="custom-form-wrapper mt15" hidden>
       {%- form 'product', product, id: product_form_id, class: 'custom-product-form' -%}
           <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
               
@@ -38,4 +37,3 @@
                                                                                                                                                                                                         </button>
                                                                                                                                                                                                           {%- endform -%}
                                                                                                                                                                                                           </div>
-                                                                                                                                                                                                          {%- endif -%}}
